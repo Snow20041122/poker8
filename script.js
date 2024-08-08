@@ -1,61 +1,132 @@
-const deckContainer = document.getElementById('deck');
-const startBtn = document.getElementById('startBtn');
-const gameBoard = document.getElementById('gameBoard');
-const shuffleBtn = document.getElementById('shuffleBtn');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數獨遊戲</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+        td {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid black;
+        }
+        input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>數獨遊戲</h1>
+    <table id="sudoku">
+        <!-- 表格內容將由 JavaScript 填充 -->
+    </table>
+    <button onclick="checkSolution()">檢查解答</button>
+    <script>
+        const sudoku = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ];
 
-// 生成撲克牌數據
-const suits = ['♠', '♥', '♣', '♦'];
-const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        function createSudoku() {
+            const table = document.getElementById('sudoku');
+            for (let i = 0; i < 9; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '1';
+                    input.max = '9';
+                    if (sudoku[i][j] !== 0) {
+                        input.value = sudoku[i][j];
+                        input.disabled = true;
+                    }
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+        }
 
-let deck = [];
+        function checkSolution() {
+            const inputs = document.querySelectorAll('input');
+            const solution = Array.from(inputs).map(input => parseInt(input.value) || 0);
+            const grid = [];
+            for (let i = 0; i < 9; i++) {
+                grid.push(solution.slice(i * 9, (i + 1) * 9));
+            }
+            if (isValidSudoku(grid)) {
+                alert('解答正確！父親節快樂！');
+            } else {
+                alert('解答錯誤。');
+            }
+        }
 
-function createDeck() {
-    deck = [];
-    suits.forEach(suit => {
-        values.forEach(value => {
-            deck.push({ suit, value });
-        });
-    });
-}
+        function isValidSudoku(board) {
+            for (let i = 0; i < 9; i++) {
+                if (!isValidRow(board, i) || !isValidCol(board, i) || !isValidBox(board, i)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-function shuffleDeck() {
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-}
+        function isValidRow(board, row) {
+            const seen = new Set();
+            for (let col = 0; col < 9; col++) {
+                const num = board[row][col];
+                if (num !== 0 && seen.has(num)) {
+                    return false;
+                }
+                seen.add(num);
+            }
+            return true;
+        }
 
-function startGame() {
-    gameBoard.classList.remove('hidden');
-    createDeck();
-    shuffleDeck();
-    generateCards();
-}
+        function isValidCol(board, col) {
+            const seen = new Set();
+            for (let row = 0; row < 9; row++) {
+                const num = board[row][col];
+                if (num !== 0 && seen.has(num)) {
+                    return false;
+                }
+                seen.add(num);
+            }
+            return true;
+        }
 
-function generateCards() {
-    deckContainer.innerHTML = '';
-    deck.forEach(card => {
-        const cardElement = document.createElement('div');
-        cardElement.className = 'card face-up';
-        cardElement.textContent = `${card.value}${card.suit}`;
-        deckContainer.appendChild(cardElement);
-    });
-}
+        function isValidBox(board, box) {
+            const seen = new Set();
+            const startRow = 3 * Math.floor(box / 3);
+            const startCol = 3 * (box % 3);
+            for (let row = startRow; row < startRow + 3; row++) {
+                for (let col = startCol; col < startCol + 3; col++) {
+                    const num = board[row][col];
+                    if (num !== 0 && seen.has(num)) {
+                        return false;
+                    }
+                    seen.add(num);
+                }
+            }
+            return true;
+        }
 
-// 结束游戏并显示祝福消息
-function endGame() {
-    alert('父親節快樂！');
-}
-
-// 示例触发游戏结束的函数
-// 实际使用中，你需要在游戏逻辑中适当触发这个函数
-function exampleEndGameTrigger() {
-    // 这里你可以根据实际游戏逻辑触发结束游戏
-    endGame();
-}
-
-startBtn.addEventListener('click', startGame);
-shuffleBtn.addEventListener('click', generateCards);
-
-// 示例触发结束游戏
-// exampleEndGameTrigger(); // 取消注释以测试
+        createSudoku();
+    </script>
+</body>
+</html>
