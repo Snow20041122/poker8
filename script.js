@@ -4,7 +4,7 @@ let pieces = [];
 
 // Create puzzle pieces
 function createPuzzle() {
-    const imageUrl = 'https://i.ibb.co/1r6S3TX/puzzle.jpg'; // Replace with your image URL
+    const imageUrl = 'https://i.ibb.co/6HBd2Ft/EIGHT.png'; // 更新的图片链接
     let index = 0;
     for (let y = 0; y < puzzleSize; y++) {
         for (let x = 0; x < puzzleSize; x++) {
