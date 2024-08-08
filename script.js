@@ -1,158 +1,95 @@
-// Function to generate a valid Sudoku puzzle
-function generateSudoku() {
-    let board = Array.from({ length: 9 }, () => Array(9).fill(0));
-    fillBoard(board);
-    removeNumbers(board);
-    return board;
-}
+const puzzleContainer = document.getElementById('puzzle-container');
+const puzzleSize = 4; // 4x4 puzzle
+let pieces = [];
 
-// Function to fill the Sudoku board with a valid solution
-function fillBoard(board) {
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
-            if (board[row][col] === 0) {
-                let numbers = [...Array(9).keys()].map(n => n + 1);
-                while (numbers.length > 0) {
-                    let num = numbers.splice(Math.floor(Math.random() * numbers.length), 1)[0];
-                    if (isValid(board, row, col, num)) {
-                        board[row][col] = num;
-                        if (fillBoard(board)) {
-                            return true;
-                        }
-                        board[row][col] = 0;
-                    }
-                }
-                return false;
-            }
+// Create puzzle pieces
+function createPuzzle() {
+    const imageUrl = 'https://i.ibb.co/1r6S3TX/puzzle.jpg'; // Replace with your image URL
+    let index = 0;
+    for (let y = 0; y < puzzleSize; y++) {
+        for (let x = 0; x < puzzleSize; x++) {
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.style.backgroundImage = `url(${imageUrl})`;
+            piece.style.backgroundPosition = `-${x * 100}px -${y * 100}px`;
+            piece.dataset.index = index;
+            piece.dataset.x = x;
+            piece.dataset.y = y;
+            piece.dataset.originalX = x;
+            piece.dataset.originalY = y;
+            piece.draggable = true;
+            piece.addEventListener('dragstart', dragStart);
+            piece.addEventListener('dragover', dragOver);
+            piece.addEventListener('drop', drop);
+            piece.addEventListener('dragend', dragEnd);
+            pieces.push(piece);
+            puzzleContainer.appendChild(piece);
+            index++;
         }
     }
-    return true;
+    // Shuffle pieces
+    shufflePieces();
 }
 
-// Function to remove some numbers from the board to create the puzzle
-function removeNumbers(board) {
-    let numCellsToRemove = 40; // Number of cells to remove for the puzzle
-    while (numCellsToRemove > 0) {
-        let row = Math.floor(Math.random() * 9);
-        let col = Math.floor(Math.random() * 9);
-        if (board[row][col] !== 0) {
-            board[row][col] = 0;
-            numCellsToRemove--;
+// Shuffle pieces
+function shufflePieces() {
+    for (let i = pieces.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pieces[i].dataset.x, pieces[j].dataset.x] = [pieces[j].dataset.x, pieces[i].dataset.x];
+        [pieces[i].dataset.y, pieces[j].dataset.y] = [pieces[j].dataset.y, pieces[i].dataset.y];
+        puzzleContainer.appendChild(pieces[i]);
+    }
+}
+
+// Drag and drop handlers
+function dragStart(event) {
+    event.dataTransfer.setData('text/plain', event.target.dataset.index);
+}
+
+function dragOver(event) {
+    event.preventDefault();
+}
+
+function drop(event) {
+    event.preventDefault();
+    const draggedIndex = event.dataTransfer.getData('text/plain');
+    const targetIndex = event.target.dataset.index;
+    const draggedPiece = pieces[draggedIndex];
+    const targetPiece = pieces[targetIndex];
+
+    // Swap positions in DOM
+    puzzleContainer.appendChild(draggedPiece);
+    puzzleContainer.appendChild(targetPiece);
+
+    // Swap dataset attributes
+    const tempX = draggedPiece.dataset.x;
+    const tempY = draggedPiece.dataset.y;
+    draggedPiece.dataset.x = targetPiece.dataset.x;
+    draggedPiece.dataset.y = targetPiece.dataset.y;
+    targetPiece.dataset.x = tempX;
+    targetPiece.dataset.y = tempY;
+}
+
+function dragEnd(event) {
+    event.preventDefault();
+}
+
+// Check if the puzzle is complete
+function checkPuzzle() {
+    let isComplete = true;
+    for (let i = 0; i < pieces.length; i++) {
+        const piece = pieces[i];
+        if (piece.dataset.x != piece.dataset.originalX || piece.dataset.y != piece.dataset.originalY) {
+            isComplete = false;
+            break;
         }
     }
-}
-
-// Function to check if placing num in board[row][col] is valid
-function isValid(board, row, col, num) {
-    return !board[row].includes(num) &&
-        !board.map(r => r[col]).includes(num) &&
-        !getBox(board, row, col).includes(num);
-}
-
-// Function to get the 3x3 box that a cell belongs to
-function getBox(board, row, col) {
-    let box = [];
-    let startRow = row - row % 3;
-    let startCol = col - col % 3;
-    for (let r = startRow; r < startRow + 3; r++) {
-        for (let c = startCol; c < startCol + 3; c++) {
-            box.push(board[r][c]);
-        }
-    }
-    return box;
-}
-
-// Function to create the Sudoku board on the page
-function createSudoku() {
-    let board = generateSudoku();
-    const table = document.getElementById('sudoku');
-    table.innerHTML = '';
-    for (let i = 0; i < 9; i++) {
-        const row = document.createElement('tr');
-        for (let j = 0; j < 9; j++) {
-            const cell = document.createElement('td');
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '1';
-            input.max = '9';
-            if (board[i][j] !== 0) {
-                input.value = board[i][j];
-                input.disabled = true;
-            }
-            cell.appendChild(input);
-            row.appendChild(cell);
-        }
-        table.appendChild(row);
-    }
-}
-
-// Function to check the solution
-function checkSolution() {
-    const inputs = document.querySelectorAll('input');
-    const solution = Array.from(inputs).map(input => parseInt(input.value) || 0);
-    const grid = [];
-    for (let i = 0; i < 9; i++) {
-        grid.push(solution.slice(i * 9, (i + 1) * 9));
-    }
-    if (isValidSudoku(grid)) {
-        alert('解答正確！父親節快樂！');
+    if (isComplete) {
+        alert('恭喜你完成了拼圖！祝爸爸父親節快樂！');
     } else {
-        alert('解答錯誤。');
+        alert('拼圖尚未完成，請再試一次！');
     }
 }
 
-// Function to validate the entire Sudoku grid
-function isValidSudoku(board) {
-    for (let i = 0; i < 9; i++) {
-        if (!isValidRow(board, i) || !isValidCol(board, i) || !isValidBox(board, i)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Function to validate a row
-function isValidRow(board, row) {
-    const seen = new Set();
-    for (let col = 0; col < 9; col++) {
-        const num = board[row][col];
-        if (num !== 0 && seen.has(num)) {
-            return false;
-        }
-        seen.add(num);
-    }
-    return true;
-}
-
-// Function to validate a column
-function isValidCol(board, col) {
-    const seen = new Set();
-    for (let row = 0; row < 9; row++) {
-        const num = board[row][col];
-        if (num !== 0 && seen.has(num)) {
-            return false;
-        }
-        seen.add(num);
-    }
-    return true;
-}
-
-// Function to validate a 3x3 box
-function isValidBox(board, box) {
-    const seen = new Set();
-    const startRow = 3 * Math.floor(box / 3);
-    const startCol = 3 * (box % 3);
-    for (let row = startRow; row < startRow + 3; row++) {
-        for (let col = startCol; col < startCol + 3; col++) {
-            const num = board[row][col];
-            if (num !== 0 && seen.has(num)) {
-                return false;
-            }
-            seen.add(num);
-        }
-    }
-    return true;
-}
-
-// Initialize the Sudoku game
-createSudoku();
+// Initialize puzzle
+createPuzzle();
