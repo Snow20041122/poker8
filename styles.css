@@ -1,46 +1,25 @@
-// Function to create and display the puzzle
-function createPuzzle() {
-    const puzzleContainer = document.getElementById('puzzle');
-    const numbers = Array.from({ length: 16 }, (_, i) => i + 1); // Numbers 1-16
-    shuffle(numbers);
-
-    puzzleContainer.innerHTML = '';
-    numbers.forEach((number, index) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.min = '1';
-        input.max = '16';
-        input.dataset.index = index; // To identify the cell position
-        const row = Math.floor(index / 4);
-        const col = index % 4;
-        cell.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
-        cell.appendChild(input);
-        puzzleContainer.appendChild(cell);
-    });
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
 }
 
-// Function to shuffle an array
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
+#puzzle-container {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(4, 100px);
+    gap: 2px;
+    margin: 0 auto;
+    width: 408px;
 }
 
-// Function to check the puzzle solution
-function checkSolution() {
-    const inputs = document.querySelectorAll('#puzzle input');
-    const userSolution = Array.from(inputs).map(input => parseInt(input.value) || 0);
-    const correctSolution = Array.from({ length: 16 }, (_, i) => i + 1);
-
-    if (userSolution.every((value, index) => value === correctSolution[index])) {
-        alert('成功! Apple祝你父親節快樂!');
-    } else {
-        alert('解答错误，请再試一次。');
-    }
+.puzzle-piece {
+    width: 100px;
+    height: 100px;
+    background-size: 400px 400px;
+    cursor: pointer;
+    position: relative;
 }
 
-// Initialize the puzzle
-createPuzzle();
+button {
+    margin-top: 20px;
+}
