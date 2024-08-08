@@ -16,6 +16,7 @@ body {
     width: 100px;
     height: 100px;
     background-size: 400px 400px;
+    background-image: url('https://i.ibb.co/6HBd2Ft/EIGHT.png'); /* 使用更新的图片链接 */
     cursor: pointer;
     position: relative;
 }
