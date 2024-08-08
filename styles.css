@@ -1,16 +1,30 @@
-table {
-    border-collapse: collapse;
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
     margin: 20px;
 }
-td {
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    border: 1px solid black;
+#puzzle {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-gap: 2px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.cell {
+    width: 100px;
+    height: 100px;
+    background-image: url('https://i.ibb.co/1r6S3TX/puzzle.jpg'); /* 外部图片链接 */
+    background-size: 400px 400px;
+    background-position: 0 0;
 }
 input {
     width: 100%;
     height: 100%;
     text-align: center;
     border: none;
+    font-size: 18px;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
 }
